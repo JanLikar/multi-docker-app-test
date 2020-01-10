@@ -1,0 +1,17 @@
+sudo: required
+services:
+  - docker
+before_install:
+  - docker build -tjanlikar/clienttest -f ./client/Dockerfile.dev ./client
+script:
+  - docker run -e CI=true janlikar/clienttest npm test
+after_success:
+  - docker build -tjanlikar/multi-client ./client
+  - docker build -tjanlikar/multi-server ./server
+  - docker build -tjanlikar/multi-nginx ./nginx
+  - docker build -tjanlikar/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
+  - docker push janlikar/multi-client
+  - docker push janlikar/multi-server
+  - docker push janlikar/multi-nginx
+  - docker push janlikar/multi-worker
